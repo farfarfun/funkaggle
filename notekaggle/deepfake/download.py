@@ -17,7 +17,7 @@ def download_file(save_dir='/root/dataset/deepfake', file_index=0):
     save_path = os.path.join(save_dir, file_name)
     url = get_url(file_index)
     download(url, save_path)
-    os.system('unzip -n {}'.format(save_path))
+    # os.system('unzip -n {}'.format(save_path))
 
     with zipfile.ZipFile(save_path) as zf:
         zf.extractall(save_dir)
