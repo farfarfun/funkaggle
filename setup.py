@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-install_requires = ['kaggle', 'notetool']
+install_requires = ['kaggle', 'notetool', 'demjson']
 
 setup(name='notekaggle',
       version='0.0.1',
