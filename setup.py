@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-install_requires = ['kaggle', 'notetool', 'demjson', 'cv2']
+install_requires = ['kaggle', 'notetool', 'demjson', 'opencv-python']
 
 setup(name='notekaggle',
       version='0.0.1',
