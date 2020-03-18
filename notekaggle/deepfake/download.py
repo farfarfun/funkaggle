@@ -77,12 +77,13 @@ def get_url(file_index=0):
     return _url
 
 
-def download_file(save_dir='/root/dataset/deepfake', file_index=0):
+def download_file(save_dir='/root/dataset/deepfake', file_index=0, unzip=True):
     file_name = 'dfdc_train_part_{}.zip'.format(str(file_index).rjust(2, '0'))
     save_path = os.path.join(save_dir, file_name)
     url = get_url(file_index)
     download(url, save_path)
     # os.system('unzip -n {}'.format(save_path))
 
-    with zipfile.ZipFile(save_path) as zf:
-        zf.extractall(save_dir)
+    if unzip:
+        with zipfile.ZipFile(save_path) as zf:
+            zf.extractall(save_dir)
