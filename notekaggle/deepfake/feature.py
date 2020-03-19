@@ -37,23 +37,41 @@ class DetectionPipeline:
         d2.reset_index(inplace=True)
 
         video_dir = self.dir_path
-        save_dir = self.dir_path + '_valid'
+        save_dir = self.dir_path + '_img'
 
         if not os.path.exists(save_dir):
             os.mkdir(save_dir)
 
+        index = 1000000
         for line in tqdm(d2.values):
-            video = line[0]
-            label = 0 if line[1] == 'FAKE' else 1
+            if line[1] == 'REAL':
+                continue
+            index += 1
+            _fake = line[0]
+            _real = line[3]
 
-            if label == 1:
-                self.n_frames = 20
-            else:
-                self.n_frames = 3
+            real_dir = os.path.join(save_dir, '1')
+            real_path = os.path.join(video_dir, _real)
+            self.video2img_file2(real_path, image_dir=real_dir, n_frames=5, index=index)
 
-            image_dir = os.path.join(save_dir, str(label))
-            video_path = os.path.join(video_dir, video)
-            self.video2img_file(video_path, image_dir=image_dir, n_frames=self.n_frames)
+            fake_dir = os.path.join(save_dir, '0')
+            fake_path = os.path.join(video_dir, _fake)
+            self.video2img_file2(fake_path, image_dir=fake_dir, n_frames=5, index=index)
+
+    def video2img_file2(self, video_path, image_dir, n_frames=10, index=1000000):
+        if not os.path.exists(image_dir):
+            os.mkdir(image_dir)
+        video_name = os.path.basename(video_path)
+        cap = cv2.VideoCapture(video_path)
+        v_len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+        sample = np.linspace(0, v_len - 1, n_frames).astype(int)
+        for i in range(v_len):
+            ret, frame = cap.read()
+            if ret and i in sample:
+                cv2.imwrite(image_dir + '/{}-{}-{}.jpg'.format(index, 1000 + i, video_name.split('.')[0]), frame)
+        cap.release()
+        # break
 
     def video2img_file(self, video_path, image_dir, n_frames=10):
         if not os.path.exists(image_dir):
@@ -87,12 +105,13 @@ def run():
     detection_pipeline.video2img()
 
 
-def test_data():
+def data_test():
     path = '/Users/liangtaoniu/tmp/dataset/deepfake/dfdc_train_part_1'
     detection_pipeline = DetectionPipeline(path, detector=None, batch_size=60, resize=0.25, n_frames=30)
 
     path = '/Users/liangtaoniu/tmp/dataset/deepfake/test/deepfake-detection-challenge/test_videos'
     detection_pipeline.test_data(path)
 
-# run()
-# test_data()
+
+run()
+# data_test()
