@@ -14,9 +14,9 @@ class MyModel:
         self.checkpoint_path = data_root + '/models/weights.hdf5'
         self.tensorboard_path = data_root + "/logs/kaggle_deepfake-{}".format(int(time.time()))
 
-        self.img_height, self.img_width = 256, 256
+        self.img_height, self.img_width = 150, 150
 
-        self.training_data_dir = train_data_dir or "/Users/liangtaoniu/tmp/dataset/deepfake/dfdc_train_part_0_img/"
+        self.training_data_dir = train_data_dir or "/Users/liangtaoniu/tmp/dataset/deepfake/dfdc_train_part_1_img/"
 
         self.testing_data_dir = test_data_dir or "/Users/liangtaoniu/tmp/dataset/deepfake/dfdc_train_part_1_img/"
 
