@@ -122,6 +122,5 @@ def data_test():
     path = '/Users/liangtaoniu/tmp/dataset/deepfake/test/deepfake-detection-challenge/test_videos'
     detection_pipeline.test_data(path)
 
-
-run()
+# run()
 # data_test()
