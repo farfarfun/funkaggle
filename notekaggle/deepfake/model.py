@@ -10,11 +10,11 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 
 class MyModel:
-    def __init__(self, train_data_dir=None, test_data_dir=None, data_root=''):
+    def __init__(self, train_data_dir=None, test_data_dir=None, data_root='/Users/liangtaoniu/tmp/dataset/deepfake'):
         self.checkpoint_path = data_root + '/models/weights.hdf5'
         self.tensorboard_path = data_root + "/logs/kaggle_deepfake-{}".format(int(time.time()))
 
-        self.img_height, self.img_width = 600, 800
+        self.img_height, self.img_width = 256, 256
 
         self.training_data_dir = train_data_dir or "/Users/liangtaoniu/tmp/dataset/deepfake/dfdc_train_part_0_img/"
 
@@ -109,3 +109,8 @@ class MyModel:
             print(temp)
 
             break
+
+
+model = MyModel()
+model.build2()
+model.train()

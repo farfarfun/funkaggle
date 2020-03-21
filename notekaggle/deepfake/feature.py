@@ -5,6 +5,7 @@ import cv2
 import demjson
 import numpy as np
 import pandas as pd
+from face_recognition import face_locations
 from tqdm import tqdm
 
 
@@ -69,6 +70,14 @@ class DetectionPipeline:
         for i in range(v_len):
             ret, frame = cap.read()
             if ret and i in sample:
+                loc = face_locations(frame)
+                if len(loc) == 0:
+                    continue
+                (top, right, bottom, left) = loc[0]
+                # print((top, right, bottom, left))
+
+                frame = frame[top:bottom, left:right]
+
                 cv2.imwrite(image_dir + '/{}-{}-{}.jpg'.format(index, 1000 + i, video_name.split('.')[0]), frame)
         cap.release()
         # break
@@ -98,7 +107,7 @@ class DetectionPipeline:
 
 
 def run():
-    index = 0
+    index = 1
     path = '/Users/liangtaoniu/tmp/dataset/deepfake/dfdc_train_part_{}'.format(index)
     detection_pipeline = DetectionPipeline(path, detector=None, batch_size=60, resize=0.25, n_frames=30)
 
