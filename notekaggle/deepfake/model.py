@@ -10,19 +10,32 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 
 class MyModel:
-    def __init__(self, train_data_dir=None, test_data_dir=None, data_root='/Users/liangtaoniu/tmp/dataset/deepfake'):
+    def __init__(self, data_root,
+                 train_data_dir,
+                 test_data_dir
+                 ):
         self.checkpoint_path = data_root + '/models/weights.hdf5'
         self.tensorboard_path = data_root + "/logs/kaggle_deepfake-{}".format(int(time.time()))
 
         self.img_height, self.img_width = 150, 150
 
-        self.training_data_dir = train_data_dir or "/Users/liangtaoniu/tmp/dataset/deepfake/dfdc_train_part_1_img/"
-
-        self.testing_data_dir = test_data_dir or "/Users/liangtaoniu/tmp/dataset/deepfake/dfdc_train_part_1_img/"
+        self.training_data_dir = train_data_dir
+        self.testing_data_dir = test_data_dir
 
         self.model = None
 
-    def build2(self):
+        self._init()
+
+    def _init(self):
+        path = os.path.dirname(self.checkpoint_path)
+        if not os.path.exists(path):
+            os.mkdir(path)
+
+        path = os.path.dirname(self.tensorboard_path)
+        if not os.path.exists(path):
+            os.mkdir(path)
+
+    def build(self):
         input_layer = tf.keras.layers.Input(shape=(self.img_height, self.img_width, 3))
         cov1 = Convolution2D(32, (3, 3),
                              name='cov1',
@@ -93,24 +106,17 @@ class MyModel:
                        callbacks=[tensorboard, checkpoint]
                        )
 
-    def predict(self, batch_size=16):
+    def predict(self, predict_dir, batch_size=16):
         test_data = ImageDataGenerator(rescale=1. / 255)
-        validation_generator = test_data.flow_from_directory(
-            self.testing_data_dir,
+        predict_generator = test_data.flow_from_directory(
+            predict_dir,
             target_size=(self.img_height, self.img_width),
             batch_size=batch_size,
             class_mode='binary')
 
-        for data in validation_generator:
+        for data in predict_generator:
             res = self.model.predict(data[0]).transpose()
             temp = np.array([res[0], data[1]]).transpose()
             temp = np.round(temp, 3)
 
             print(temp)
-
-            break
-
-
-model = MyModel()
-model.build2()
-model.train()
