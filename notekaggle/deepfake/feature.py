@@ -106,9 +106,10 @@ class DetectionPipeline:
             self.video2img_file(video_path=video_path, image_dir=path + '_img', n_frames=10)
 
 
-def run():
+def run(data_root=None):
+    data_root = data_root or '/Users/liangtaoniu/tmp/dataset/deepfake/'
     index = 1
-    path = '/Users/liangtaoniu/tmp/dataset/deepfake/dfdc_train_part_{}'.format(index)
+    path = data_root + '/dfdc_train_part_{}'.format(index)
     detection_pipeline = DetectionPipeline(path, detector=None, batch_size=60, resize=0.25, n_frames=30)
 
     detection_pipeline.video2img()
