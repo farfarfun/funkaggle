@@ -10,7 +10,8 @@ from tqdm import tqdm
 
 def video2img_file(video_path, image_dir, n_frames=5, index=1000000):
     if not os.path.exists(image_dir):
-        os.mkdir(image_dir)
+        os.makedirs(image_dir)
+
     video_name = os.path.basename(video_path)
     cap = cv2.VideoCapture(video_path)
     v_len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -61,7 +62,7 @@ def video2img_predict(source_dir, target_dir=None, n_frames=5):
     target_dir = target_dir or source_dir + "_img"
 
     index = 0
-    for name in os.listdir(source_dir):
+    for name in tqdm(os.listdir(source_dir)):
         index += 1
         video_path = '{}/{}'.format(source_dir, name)
 

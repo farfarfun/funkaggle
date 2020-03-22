@@ -1,4 +1,5 @@
 from notekaggle.deepfake.download import download_files
+from notekaggle.deepfake.feature import video2img_predict
 from notekaggle.deepfake.feature import video2img_train
 from notekaggle.deepfake.model import MyModel
 
@@ -8,7 +9,7 @@ train_data = data_root + 'train_data'
 test_data = data_root + 'test_data'
 predict_data = data_root + 'predict_data'
 
-predict_path = data_root + '/test/deepfake-detection-challenge/test_videos'
+predict_path = data_root + '/deepfake-detection-challenge/test_videos'
 
 
 def download():
@@ -16,7 +17,7 @@ def download():
     download_files(save_dir=data_root, file_index_list=l)
 
 
-def feature(test=False, train=False):
+def feature(test=False, train=False, predict=False):
     if test:
         for index in [0]:
             path = data_root + '/dfdc_train_part_{}'.format(index)
@@ -25,8 +26,8 @@ def feature(test=False, train=False):
         for index in [2, 3]:
             path = data_root + '/dfdc_train_part_{}'.format(index)
             video2img_train(path, target_dir=train_data)
-
-    # video2img_predict(predict_path)
+    if predict:
+        video2img_predict(predict_path, target_dir=predict_data)
 
 
 def model_train():
@@ -35,10 +36,10 @@ def model_train():
                     test_data_dir=test_data
                     )
     model.build()
-    model.clear()
+    #    model.clear()
     model.load()
     model.train(batch_size=32)
 
 
-model_train()
-# feature(train=True)
+# model_train()
+feature(predict=True)
