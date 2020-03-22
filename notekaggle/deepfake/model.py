@@ -4,16 +4,17 @@ import time
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
+from tensorflow.keras import regularizers
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 from tensorflow.keras.layers import Convolution2D, MaxPooling2D, Dropout, Flatten, Dense
+from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 
 class MyModel:
     def __init__(self, data_root,
                  train_data_dir,
-                 test_data_dir
-                 ):
+                 test_data_dir):
         self.checkpoint_path = data_root + '/models/weights.hdf5'
         self.tensorboard_path = data_root + "/logs/kaggle_deepfake-{}".format(int(time.time()))
 
@@ -40,32 +41,45 @@ class MyModel:
         cov1 = Convolution2D(32, (3, 3),
                              name='cov1',
                              input_shape=(self.img_width, self.img_height, 3),
+                             kernel_regularizer=regularizers.l2(0.0001),
+                             # activity_regularizer=regularizers.l1(0.01),
                              activation='relu')(input_layer)
         pool1 = MaxPooling2D(pool_size=(2, 2), name='pool1')(cov1)
         cov2 = Convolution2D(32, (3, 3),
                              name='cov2',
+                             kernel_regularizer=regularizers.l2(0.0001),
+                             # activity_regularizer=regularizers.l1(0.01),
                              activation='relu')(pool1)
         poo2 = MaxPooling2D(pool_size=(2, 2), name='pool2')(cov2)
         cov3 = Convolution2D(64, (3, 3),
                              name='cov3',
+                             kernel_regularizer=regularizers.l2(0.0001),
+                             # activity_regularizer=regularizers.l1(0.01),
                              activation='relu')(poo2)
         pool3 = MaxPooling2D(pool_size=(2, 2), name='pool3')(cov3)
 
         fla = Flatten()(pool3)
-        dense1 = Dense(64, activation='relu', name='dense1')(fla)
+        dense1 = Dense(64,
+                       name='dense1',
+                       kernel_regularizer=regularizers.l2(0.0001),
+                       # activity_regularizer=regularizers.l1(0.01),
+                       activation='relu', )(fla)
         drop1 = Dropout(0.5)(dense1)
-        dense2 = Dense(1, activation='sigmoid', name='dense2')(drop1)
+        dense2 = Dense(1, name='dense2',
+                       kernel_regularizer=regularizers.l2(0.0001),
+                       # activity_regularizer=regularizers.l1(0.01),
+                       activation='sigmoid')(drop1)
 
         self.model = tf.keras.Model(input_layer, dense2)
         return self.model
 
     def load(self):
         if os.path.exists(self.checkpoint_path):
-            self.model.load_weights(self.checkpoint_path)
+            self.model = load_model(self.checkpoint_path)
 
-    def train(self, batch_size=16):
+    def train(self, batch_size=64):
         checkpoint = ModelCheckpoint(self.checkpoint_path,
-                                     monitor='val_acc',
+                                     monitor='val_auc',
                                      verbose=1,
                                      mode='max')
 
@@ -99,14 +113,17 @@ class MyModel:
                            optimizer="rmsprop",
                            metrics=["accuracy", keras.metrics.AUC()])
 
-        self.load()
         self.model.fit(train_generator,
                        validation_data=validation_generator,
                        epochs=100,
                        callbacks=[tensorboard, checkpoint]
                        )
 
-    def predict(self, predict_dir, batch_size=16):
+    def clear(self):
+        if os.path.exists(self.checkpoint_path):
+            os.remove(self.checkpoint_path)
+
+    def predict(self, predict_dir, batch_size=64):
         test_data = ImageDataGenerator(rescale=1. / 255)
         predict_generator = test_data.flow_from_directory(
             predict_dir,
