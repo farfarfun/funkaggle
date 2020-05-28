@@ -36,10 +36,22 @@ def model_train():
                     test_data_dir=test_data
                     )
     model.build()
-    #    model.clear()
+    # model.clear()
     model.load()
     model.train(batch_size=32)
 
 
+def model_predict():
+    model = MyModel(data_root=data_root,
+                    train_data_dir=train_data,
+                    test_data_dir=test_data
+                    )
+    model.build()
+
+    model.load()
+    model.predict(predict_dir=predict_data)
+
+
 # model_train()
-feature(predict=True)
+# feature(predict=True)
+model_predict()

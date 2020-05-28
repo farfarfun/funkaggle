@@ -2,6 +2,7 @@ import os
 import time
 
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import regularizers
@@ -9,6 +10,7 @@ from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 from tensorflow.keras.layers import Convolution2D, MaxPooling2D, Dropout, Flatten, Dense
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tqdm import tqdm
 
 
 class MyModel:
@@ -41,19 +43,19 @@ class MyModel:
         cov1 = Convolution2D(32, (3, 3),
                              name='cov1',
                              input_shape=(self.img_width, self.img_height, 3),
-                             kernel_regularizer=regularizers.l2(0.0001),
+                             kernel_regularizer=regularizers.l2(0.0005),
                              # activity_regularizer=regularizers.l1(0.01),
                              activation='relu')(input_layer)
         pool1 = MaxPooling2D(pool_size=(2, 2), name='pool1')(cov1)
         cov2 = Convolution2D(32, (3, 3),
                              name='cov2',
-                             kernel_regularizer=regularizers.l2(0.0001),
+                             kernel_regularizer=regularizers.l2(0.0005),
                              # activity_regularizer=regularizers.l1(0.01),
                              activation='relu')(pool1)
         poo2 = MaxPooling2D(pool_size=(2, 2), name='pool2')(cov2)
         cov3 = Convolution2D(64, (3, 3),
                              name='cov3',
-                             kernel_regularizer=regularizers.l2(0.0001),
+                             kernel_regularizer=regularizers.l2(0.0005),
                              # activity_regularizer=regularizers.l1(0.01),
                              activation='relu')(poo2)
         pool3 = MaxPooling2D(pool_size=(2, 2), name='pool3')(cov3)
@@ -61,12 +63,12 @@ class MyModel:
         fla = Flatten()(pool3)
         dense1 = Dense(64,
                        name='dense1',
-                       kernel_regularizer=regularizers.l2(0.0001),
+                       kernel_regularizer=regularizers.l2(0.0005),
                        # activity_regularizer=regularizers.l1(0.01),
                        activation='relu', )(fla)
         drop1 = Dropout(0.5)(dense1)
         dense2 = Dense(1, name='dense2',
-                       kernel_regularizer=regularizers.l2(0.0001),
+                       kernel_regularizer=regularizers.l2(0.0005),
                        # activity_regularizer=regularizers.l1(0.01),
                        activation='sigmoid')(drop1)
 
@@ -129,11 +131,38 @@ class MyModel:
             predict_dir,
             target_size=(self.img_height, self.img_width),
             batch_size=batch_size,
-            class_mode='binary')
+            class_mode='binary',
+            shuffle=False
+        )
+        print(predict_generator.filenames)
+        filenames = predict_generator.filenames
+        result = []
 
-        for data in predict_generator:
+        for data in tqdm(predict_generator):
             res = self.model.predict(data[0]).transpose()
             temp = np.array([res[0], data[1]]).transpose()
-            temp = np.round(temp, 3)
 
-            print(temp)
+            result.extend(temp)
+            if len(result) >= len(filenames):
+                result = result[:len(filenames)]
+                break
+
+            # break
+        df0 = list(np.array(result).transpose().tolist())
+        df0.append(filenames[:len(result)])
+        df1 = np.array(df0).transpose()
+        df2 = pd.DataFrame(df1)
+        df2.columns = ['label', 'real', 'name']
+        df2['label'] = df2['label'].astype('float')
+        df2['real'] = df2['real'].astype('float')
+        df2['filename'] = df2['name'].str.extract(r'[-]([a-z]+)') + '.mp4'
+        df2 = df2[['filename', 'label', 'real']]
+
+        df3 = df2.groupby('filename').mean().reset_index()
+
+        print(df3)
+
+        path = '/Users/liangtaoniu/tmp/dataset/deepfake/result/submission.csv'
+        df3[['filename', 'label']].to_csv(path, index=None)
+
+        # print(result)
