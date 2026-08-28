@@ -1,7 +1,7 @@
 import os
 import zipfile
 
-from notetool.download import download
+from funtool.download import download
 
 
 def get_url(file_index=0):
