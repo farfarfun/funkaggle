@@ -13,7 +13,7 @@ python setup.py bdist_wheel
 # 发布包
 twine upload dist/*
 
-rm -rf notekaggle.egg-info
+rm -rf funkaggle.egg-info
 rm -rf dist
 rm -rf build
 

@@ -1,7 +1,7 @@
-from notekaggle.deepfake.download import download_files
-from notekaggle.deepfake.feature import video2img_predict
-from notekaggle.deepfake.feature import video2img_train
-from notekaggle.deepfake.model import MyModel
+from funkaggle.deepfake.download import download_files
+from funkaggle.deepfake.feature import video2img_predict
+from funkaggle.deepfake.feature import video2img_train
+from funkaggle.deepfake.model import MyModel
 
 # data_root = '/root/dataset/deepfake'
 data_root = '/Users/liangtaoniu/tmp/dataset/deepfake/'
