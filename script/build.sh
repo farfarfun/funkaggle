@@ -1,23 +1,8 @@
 #!/usr/bin/env bash
+# 构建 / 递增版本号 / 发布，统一走 funbuild（见组织 SPEC.md §4.4），
+# 不再手写 setup.py / twine 流程，也不再在发布脚本里混入无关的 git 操作。
+set -euo pipefail
 
-# 编译
-python setup.py build
-# 生成 tar.gz
-python setup.py sdist
-# 生成 egg 包
-python setup.py bdist_egg
-# 生成 wheel 包
-python setup.py bdist_wheel
+command -v funbuild >/dev/null || { echo "error: funbuild is required (pip install funbuild)" >&2; exit 1; }
 
-#twine register dist/*
-# 发布包
-twine upload dist/*
-
-rm -rf funkaggle.egg-info
-rm -rf dist
-rm -rf build
-
-git pull
-git add -A
-git commit -a -m "add"
-git push
+funbuild build "$@"
