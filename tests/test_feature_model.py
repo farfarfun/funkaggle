@@ -1,4 +1,4 @@
-"""覆盖 feature.py / model.py 的公开 API。
+"""覆盖 feature.py / download.py 的可执行公开 API。
 
 这两个模块依赖 tensorflow / face_recognition（含 dlib 编译）等重依赖，
 审计所用沙箱磁盘紧张未安装，故用 importorskip 优雅跳过；在装有完整
@@ -8,6 +8,20 @@
 from pathlib import Path
 
 import pytest
+
+from funkaggle.deepfake.download import get_url
+
+
+def test_get_url_uses_kaggle_without_signed_query() -> None:
+    url = get_url(3)
+    assert "kaggle.com/api/v1/competitions/data/download" in url
+    assert "GoogleAccessId" not in url
+    assert url.endswith("dfdc_train_part_03.zip")
+
+
+def test_get_url_rejects_invalid_index() -> None:
+    with pytest.raises(IndexError):
+        get_url(50)
 
 cv2 = pytest.importorskip("cv2")
 pytest.importorskip("face_recognition")

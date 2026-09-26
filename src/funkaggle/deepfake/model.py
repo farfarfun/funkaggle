@@ -144,6 +144,9 @@ class MyModel:
             class_mode="binary",
         )
 
+        if self.model is None:
+            raise RuntimeError("请先调用 build() 或 load() 初始化模型")
+
         self.model.compile(
             loss="binary_crossentropy",
             optimizer="rmsprop",

@@ -10,7 +10,7 @@ from funkaggle.deepfake import download as download_mod
 
 def test_get_url_returns_string_for_valid_index() -> None:
     url = download_mod.get_url(0)
-    assert url.startswith("https://storage.googleapis.com/")
+    assert url.startswith("https://www.kaggle.com/api/v1/competitions/data/download/")
 
 
 def test_get_url_rejects_out_of_range_index() -> None:
