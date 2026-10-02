@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from types import SimpleNamespace
+from typing import ClassVar
 
 import numpy as np
 import pandas as pd
@@ -85,7 +86,7 @@ def test_predict_writes_video_level_submission(
     batch = (np.zeros((2, 150, 150, 3)), np.array([1.0, 0.0]))
 
     class FakeGenerator:
-        filenames = ["1/1-1000-alpha.jpg", "0/2-1000-alpha.jpg"]
+        filenames: ClassVar[list[str]] = ["1/1-1000-alpha.jpg", "0/2-1000-alpha.jpg"]
 
         def __iter__(self):
             return iter([batch])
@@ -99,9 +100,7 @@ def test_predict_writes_video_level_submission(
         def flow_from_directory(self, *_args: object, **_kwargs: object) -> object:
             return generator
 
-    fake_predictor = SimpleNamespace(
-        predict=lambda _images: np.array([[0.2], [0.6]])
-    )
+    fake_predictor = SimpleNamespace(predict=lambda _images: np.array([[0.2], [0.6]]))
     model.model = fake_predictor  # type: ignore[assignment]
     monkeypatch.setattr(model_mod, "ImageDataGenerator", FakeDataGenerator)
     monkeypatch.setattr(model_mod, "tqdm", lambda iterable: iterable)

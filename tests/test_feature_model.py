@@ -2,12 +2,12 @@
 
 from pathlib import Path
 
-import pytest
 import cv2
 import numpy as np
+import pytest
 
-from funkaggle.deepfake.download import get_url
 from funkaggle.deepfake import feature as feature_mod
+from funkaggle.deepfake.download import get_url
 from funkaggle.deepfake.feature import video2img_file
 
 
@@ -21,6 +21,7 @@ def test_get_url_uses_kaggle_without_signed_query() -> None:
 def test_get_url_rejects_invalid_index() -> None:
     with pytest.raises(IndexError):
         get_url(50)
+
 
 def test_video2img_file_skips_video_without_faces(tmp_path: Path) -> None:
     """纯色帧里检测不到人脸时，不应生成任何图片（边界路径）。"""
