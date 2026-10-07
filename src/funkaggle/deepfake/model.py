@@ -27,6 +27,9 @@ class MyModel:
         data_root: 数据与权重根目录；权重存放于 `<data_root>/models/weights.hdf5`。
         train_data_dir: 训练集图片目录（需按类别分子目录，`flow_from_directory` 格式）。
         test_data_dir: 验证集图片目录（同上）。
+
+    Returns:
+        包含模型配置、权重路径与日志路径的 `MyModel` 实例。
     """
 
     def __init__(self, data_root: str, train_data_dir: str, test_data_dir: str) -> None:
@@ -50,7 +53,11 @@ class MyModel:
         os.makedirs(self.tensorboard_path, exist_ok=True)
 
     def build(self) -> tf.keras.Model:
-        """构建三层卷积网络，返回并缓存模型实例。"""
+        """构建三层卷积网络并缓存模型实例。
+
+        Returns:
+            新建的 tf.keras 模型实例。
+        """
         input_layer = tf.keras.layers.Input(shape=(self.img_height, self.img_width, 3))
         cov1 = Convolution2D(
             32,
@@ -102,7 +109,11 @@ class MyModel:
         return self.model
 
     def load(self) -> None:
-        """若 `checkpoint_path` 存在已保存权重，则加载。"""
+        """若 `checkpoint_path` 存在已保存权重，则加载。
+
+        Returns:
+            无返回值。存在权重时更新 `self.model`。
+        """
         if os.path.exists(self.checkpoint_path):
             self.model = load_model(self.checkpoint_path)
 
@@ -111,6 +122,9 @@ class MyModel:
 
         Args:
             batch_size: 训练与验证的 batch 大小。
+
+        Returns:
+            无返回值。训练产生的权重写入 `checkpoint_path`。
         """
         checkpoint = ModelCheckpoint(
             self.checkpoint_path, monitor="val_auc", verbose=1, mode="max"
@@ -161,7 +175,11 @@ class MyModel:
         )
 
     def clear(self) -> None:
-        """删除已保存的权重文件。"""
+        """删除已保存的权重文件。
+
+        Returns:
+            无返回值。权重文件不存在时不执行操作。
+        """
         if os.path.exists(self.checkpoint_path):
             os.remove(self.checkpoint_path)
 

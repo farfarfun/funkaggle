@@ -10,8 +10,8 @@
     python -m funkaggle.deepfake.run train
     python -m funkaggle.deepfake.run predict
 
-下载步骤依赖的直链已过期（见 `download.py`），`feature` / `train` / `predict`
-需要自行准备好对应目录下的视频或图片数据。
+`download` 使用 Kaggle 官方客户端认证后下载比赛数据；`feature` / `train` /
+`predict` 需要自行准备好对应目录下的视频或图片数据。
 """
 
 from __future__ import annotations
@@ -26,11 +26,14 @@ logger = getLogger("funkaggle")
 
 
 def download(config: DeepfakeConfig, file_index_list: list[int] | None = None) -> None:
-    """下载 DFDC 训练数据分卷（下载直链已过期，仅作流程演示）。
+    """通过 Kaggle 官方客户端下载 DFDC 训练数据分卷。
 
     Args:
         config: 运行时配置。
         file_index_list: 待下载的分卷编号列表，默认前 5 个分卷。
+
+    Returns:
+        无返回值。分卷下载并解压至 `config.data_root`。
     """
     from funkaggle.deepfake.download import download_files
 
@@ -51,6 +54,9 @@ def feature(
         test: 是否为验证集（`dfdc_train_part_0`）抽帧。
         train: 是否为训练集（`dfdc_train_part_2/3`）抽帧。
         predict: 是否为待预测视频抽帧。
+
+    Returns:
+        无返回值。所选数据集的人脸帧写入配置对应目录。
     """
     from funkaggle.deepfake.feature import video2img_predict, video2img_train
 
@@ -73,6 +79,9 @@ def model_train(config: DeepfakeConfig) -> None:
 
     Args:
         config: 运行时配置。
+
+    Returns:
+        无返回值。训练产生的权重写入 `config.data_root/models`。
     """
     from funkaggle.deepfake.model import MyModel
 
@@ -91,6 +100,9 @@ def model_predict(config: DeepfakeConfig) -> None:
 
     Args:
         config: 运行时配置。
+
+    Returns:
+        无返回值。提交文件写入 `config.submission_path`。
     """
     from funkaggle.deepfake.model import MyModel
 
@@ -108,7 +120,11 @@ def model_predict(config: DeepfakeConfig) -> None:
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    """构建 CLI 参数解析器。"""
+    """构建 CLI 参数解析器。
+
+    Returns:
+        配置了流程动作和数据根目录参数的解析器。
+    """
     parser = argparse.ArgumentParser(prog="funkaggle-deepfake", description=__doc__)
     parser.add_argument(
         "action",
@@ -124,7 +140,14 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> None:
-    """CLI 入口。"""
+    """执行 CLI 指定的流程动作。
+
+    Args:
+        argv: 待解析的命令行参数；为 None 时读取进程命令行。
+
+    Returns:
+        无返回值。动作执行结果由各流程函数写入文件系统。
+    """
     args = _build_parser().parse_args(argv)
     config = build_config(args.data_root)
     logger.info(f"data_root={config.data_root}")

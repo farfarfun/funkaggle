@@ -5,16 +5,18 @@ from __future__ import annotations
 import os
 import zipfile
 from pathlib import Path
+from typing import Any
 
 from funfile.compress.zipfile import ZipFile
-from funget import download
+
+COMPETITION = "deepfake-detection-challenge"
 
 
 def get_url(file_index: int = 0) -> str:
     """返回指定分卷的 Kaggle 官方下载地址。
 
-    认证由 Kaggle 客户端环境（`~/.kaggle/kaggle.json` 或环境变量）提供，
-    地址本身不包含任何凭据或签名参数。
+    该地址仅用于识别 Kaggle 的官方资源；实际下载必须通过
+    `KaggleApi.competition_download_file()`，由客户端处理认证。
 
     Args:
         file_index: 分卷编号，取值范围 0-49。
@@ -46,22 +48,51 @@ def download_file(
         file_index: 分卷编号，取值范围 0-49。
         unzip: 下载完成后是否自动解压。
 
+    Returns:
+        无返回值。下载成功后文件位于 `save_dir`，`unzip=True` 时同时解压。
+
     Raises:
         IndexError: `file_index` 不在 0-49 范围内（见 `get_url`）。
-        RuntimeError: `funget.download` 返回下载失败。
+        RuntimeError: Kaggle API 认证或下载失败。
     """
     target_dir = Path(save_dir or Path.home() / ".cache/funkaggle/deepfake")
     target_dir.mkdir(parents=True, exist_ok=True)
+    get_url(file_index)  # 保持公开 API 的分卷编号校验规则一致。
     file_name = f"dfdc_train_part_{file_index:02}.zip"
     save_path = target_dir / file_name
-    url = get_url(file_index)
-    ok = download(url, os.fspath(save_path))
-    if not ok:
+    try:
+        api = _create_kaggle_api()
+        api.authenticate()
+    except Exception as exc:
         raise RuntimeError(
-            f"下载失败: url={url}, save_path={save_path}, file_index={file_index}"
+            "Kaggle API 认证失败。请配置 ~/.kaggle/kaggle.json 或 "
+            "KAGGLE_USERNAME/KAGGLE_KEY，并接受比赛规则。"
+        ) from exc
+
+    try:
+        api.competition_download_file(
+            COMPETITION,
+            file_name,
+            path=os.fspath(target_dir),
+            force=True,
+            quiet=True,
         )
+    except Exception as exc:
+        raise RuntimeError(
+            f"Kaggle 下载失败: file_index={file_index}, save_path={save_path}"
+        ) from exc
+
+    if not save_path.is_file():
+        raise RuntimeError(f"Kaggle 下载未生成文件: {save_path}")
     if unzip:
         unzip_file(os.fspath(save_path), os.fspath(target_dir))
+
+
+def _create_kaggle_api() -> Any:
+    """创建 Kaggle 官方客户端实例，避免导入模块时触发认证。"""
+    from kaggle.api.kaggle_api_extended import KaggleApi
+
+    return KaggleApi()
 
 
 def unzip_file(save_path: str, save_dir: str) -> None:
@@ -74,6 +105,9 @@ def unzip_file(save_path: str, save_dir: str) -> None:
     Args:
         save_path: zip 文件路径。
         save_dir: 解压目标目录，解压后所有文件必须位于该目录内。
+
+    Returns:
+        无返回值。归档内容解压至 `save_dir`。
 
     Raises:
         FileNotFoundError: `save_path` 不存在。
@@ -107,6 +141,9 @@ def download_files(
         save_dir: 保存目录，透传给 `download_file`。
         file_index_list: 待下载的分卷编号列表。
         unzip: 下载完成后是否自动解压。
+
+    Returns:
+        无返回值。所有分卷下载完成后返回。
 
     Raises:
         IndexError: 列表中某个编号不在 0-49 范围内。

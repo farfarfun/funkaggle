@@ -10,7 +10,6 @@ authors = [{ name = "牛哥", email = "farfarfun@qq.com" }]
 dependencies = [
     "farlog>=1.1.7",
     "funfile>=1.0.39",
-    "funget>=1.1.63",
     "kaggle>=1.6",
     "opencv-python>=4.8",
     "numpy>=1.26",
