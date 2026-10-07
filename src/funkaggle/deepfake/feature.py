@@ -22,6 +22,9 @@ def video2img_file(
         image_dir: 输出图片目录，不存在则自动创建。
         n_frames: 抽取帧数。
         index: 输出文件名前缀，用于避免多视频间文件名冲突。
+
+    Returns:
+        无返回值。检测到的人脸帧以 jpg 文件写入 `image_dir`。
     """
     if not os.path.exists(image_dir):
         os.makedirs(image_dir)
@@ -59,6 +62,9 @@ def video2img_train(
         source_dir: 视频与 `metadata.json` 所在目录。
         target_dir: 输出根目录，默认 `<source_dir>_img`。
         n_frames: 每个视频抽取帧数。
+
+    Returns:
+        无返回值。按标签将抽取的人脸帧写入 `target_dir` 的子目录。
     """
     video_json = source_dir + "/metadata.json"
     target_dir = target_dir or source_dir + "_img"
@@ -97,6 +103,9 @@ def video2img_predict(
         source_dir: 视频所在目录。
         target_dir: 输出根目录，默认 `<source_dir>_img`。
         n_frames: 每个视频抽取帧数。
+
+    Returns:
+        无返回值。抽取的人脸帧写入 `target_dir/1`。
     """
     target_dir = target_dir or source_dir + "_img"
 

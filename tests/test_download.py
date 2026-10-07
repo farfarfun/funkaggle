@@ -20,24 +20,36 @@ def test_get_url_rejects_out_of_range_index() -> None:
         download_mod.get_url(-1)
 
 
-def test_download_file_calls_funget_download(
+def test_download_file_authenticates_and_calls_kaggle_api(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    """download_file 应把 (url, save_path) 转发给 funget.download，不直连网络。"""
-    calls = []
+    """download_file 必须通过认证后的 Kaggle 官方客户端下载。"""
+    calls: list[object] = []
 
-    def fake_download(url: str, filepath: str, **kwargs) -> bool:
-        calls.append((url, filepath))
-        Path(filepath).write_bytes(b"")
-        return True
+    class FakeKaggleApi:
+        def authenticate(self) -> None:
+            calls.append("authenticate")
 
-    monkeypatch.setattr(download_mod, "download", fake_download)
+        def competition_download_file(
+            self, competition: str, file_name: str, path: str, **kwargs: object
+        ) -> None:
+            calls.append((competition, file_name, path, kwargs))
+            Path(path, file_name).write_bytes(b"")
+
+    monkeypatch.setattr(download_mod, "_create_kaggle_api", FakeKaggleApi)
     download_mod.download_file(save_dir=str(tmp_path), file_index=0, unzip=False)
 
-    assert len(calls) == 1
-    url, save_path = calls[0]
-    assert url == download_mod.get_url(0)
-    assert save_path == str(tmp_path / "dfdc_train_part_00.zip")
+    assert calls[0] == "authenticate"
+    competition, file_name, path, kwargs = calls[1]
+    assert competition == download_mod.COMPETITION
+    assert file_name == "dfdc_train_part_00.zip"
+    assert path == str(tmp_path)
+    assert kwargs == {"force": True, "quiet": True}
+
+
+def test_download_file_rejects_out_of_range_index(tmp_path: Path) -> None:
+    with pytest.raises(IndexError):
+        download_mod.download_file(save_dir=str(tmp_path), file_index=50)
 
 
 def test_unzip_file_extracts_into_save_dir(tmp_path: Path) -> None:
@@ -94,10 +106,14 @@ def test_unzip_file_raises_for_invalid_zip(tmp_path: Path) -> None:
         download_mod.unzip_file(str(bad_zip), str(out_dir))
 
 
-def test_download_file_raises_when_download_fails(
+def test_download_file_raises_when_authentication_fails(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    """funget.download 返回 False 时应中止，不能继续解压失败产物。"""
-    monkeypatch.setattr(download_mod, "download", lambda url, filepath, **kwargs: False)
-    with pytest.raises(RuntimeError, match="下载失败"):
+    """认证失败时不得继续下载或解压。"""
+    class FakeKaggleApi:
+        def authenticate(self) -> None:
+            raise OSError("missing credentials")
+
+    monkeypatch.setattr(download_mod, "_create_kaggle_api", FakeKaggleApi)
+    with pytest.raises(RuntimeError, match="认证失败"):
         download_mod.download_file(save_dir=str(tmp_path), file_index=0)

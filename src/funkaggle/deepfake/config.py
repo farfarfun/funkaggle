@@ -28,27 +28,47 @@ class DeepfakeConfig:
 
     @property
     def train_data(self) -> Path:
-        """训练集抽帧图片目录。"""
+        """返回训练集抽帧图片目录。
+
+        Returns:
+            位于 `data_root/train_data` 的路径。
+        """
         return self.data_root / "train_data"
 
     @property
     def test_data(self) -> Path:
-        """验证集抽帧图片目录。"""
+        """返回验证集抽帧图片目录。
+
+        Returns:
+            位于 `data_root/test_data` 的路径。
+        """
         return self.data_root / "test_data"
 
     @property
     def predict_data(self) -> Path:
-        """待预测抽帧图片目录。"""
+        """返回待预测抽帧图片目录。
+
+        Returns:
+            位于 `data_root/predict_data` 的路径。
+        """
         return self.data_root / "predict_data"
 
     @property
     def predict_source(self) -> Path:
-        """待预测原始视频目录。"""
+        """返回待预测原始视频目录。
+
+        Returns:
+            位于比赛数据目录 `test_videos` 的路径。
+        """
         return self.data_root / "deepfake-detection-challenge" / "test_videos"
 
     @property
     def submission_path(self) -> Path:
-        """Kaggle 提交文件输出路径。"""
+        """返回 Kaggle 提交文件输出路径。
+
+        Returns:
+            位于 `data_root/result/submission.csv` 的路径。
+        """
         return self.data_root / "result" / "submission.csv"
 
 

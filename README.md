@@ -14,7 +14,7 @@ uv pip install -e .
 pip install -e .
 ```
 
-`requires-python = ">=3.12"`（因依赖 `funget>=1.1.63` 要求 3.12+）。
+`requires-python = ">=3.12"`。
 
 ## 最小可运行示例
 
@@ -34,10 +34,12 @@ print(config.train_data)  # /data/deepfake/train_data
 print(config.submission_path)  # /data/deepfake/result/submission.csv
 ```
 
-真正跑完整流程（需要自备 DFDC 数据集，并自行配置好 Kaggle API 认证）：
+真正跑完整流程前，下载步骤需要在 Kaggle 中接受 DFDC 比赛规则，并配置
+`~/.kaggle/kaggle.json` 或环境变量 `KAGGLE_USERNAME` / `KAGGLE_KEY`。代码通过
+Kaggle 官方客户端认证和下载；其余步骤则需要已下载或自行准备的数据：
 
 ```bash
-python -m funkaggle.deepfake.run download --data-root /data/deepfake  # 未配置 Kaggle API 认证时会下载失败
+python -m funkaggle.deepfake.run download --data-root /data/deepfake
 python -m funkaggle.deepfake.run feature   --data-root /data/deepfake  # 仅对待预测视频抽帧
 python -m funkaggle.deepfake.run train     --data-root /data/deepfake
 python -m funkaggle.deepfake.run predict   --data-root /data/deepfake
@@ -59,12 +61,12 @@ feature(config, train=True, test=True)  # 对训练集/验证集视频抽帧，�
 所有逻辑都在 `src/funkaggle/deepfake` 子模块里，围绕 DFDC 比赛的下载 / 抽帧 / 训练 / 预测四步：
 
 - `src/funkaggle/deepfake/config.py`：路径配置解析，命令行参数 > 环境变量 `FUNKAGGLE_DATA_ROOT` > 默认值，不写死任何人的本地路径。
-- `src/funkaggle/deepfake/download.py`：`download_files()` / `download_file()` 按编号下载 `dfdc_train_part_XX.zip` 训练数据分卷并安全解压（校验成员路径，拒绝越出目标目录）。
+- `src/funkaggle/deepfake/download.py`：通过 Kaggle 官方客户端认证后按编号下载 `dfdc_train_part_XX.zip` 训练数据分卷并安全解压（校验成员路径，拒绝越出目标目录）。
 - `src/funkaggle/deepfake/feature.py`：`video2img_train()` / `video2img_predict()` 用 `face_recognition` 从训练/测试视频里抽帧、裁出人脸区域，按真假标签分目录保存为图片。
 - `src/funkaggle/deepfake/model.py`：`MyModel` 类，一个基于 `tf.keras` 的简单三层卷积二分类模型，提供 `build()` / `train()` / `load()` / `predict()`，`predict()` 会生成 Kaggle 提交用的 `submission.csv`。
 - `src/funkaggle/deepfake/run.py`：CLI 入口，把上面几步串起来（`download` / `feature` / `train` / `predict` 四个子命令）。
 
-仓库里还附带了一份训练好的权重 `src/funkaggle/models/deepfake/weights.hdf5`。
+训练得到的权重保存在数据根目录的 `models/weights.hdf5`，不随源码包发布。
 
 ## 局限性
 
