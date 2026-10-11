@@ -39,3 +39,8 @@ def test_main_dispatches_to_download(
     main(["download", "--data-root", str(tmp_path)])
 
     assert calls == [tmp_path.resolve()]
+
+
+def test_predict_fails_when_checkpoint_is_missing(tmp_path: Path) -> None:
+    with pytest.raises(FileNotFoundError, match="models/weights\\.hdf5"):
+        main(["predict", "--data-root", str(tmp_path)])

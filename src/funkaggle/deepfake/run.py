@@ -104,6 +104,10 @@ def model_predict(config: DeepfakeConfig) -> None:
     Returns:
         无返回值。提交文件写入 `config.submission_path`。
     """
+    checkpoint_path = config.data_root / "models" / "weights.hdf5"
+    if not checkpoint_path.is_file():
+        raise FileNotFoundError(f"未找到预测所需的模型权重: {checkpoint_path}")
+
     from funkaggle.deepfake.model import MyModel
 
     model = MyModel(
