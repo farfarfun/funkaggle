@@ -14,7 +14,7 @@ uv pip install -e .
 pip install -e .
 ```
 
-`requires-python = ">=3.12"`。
+`requires-python = ">=3.10"`。
 
 ## 最小可运行示例
 
@@ -44,6 +44,9 @@ python -m funkaggle.deepfake.run feature   --data-root /data/deepfake  # 仅对�
 python -m funkaggle.deepfake.run train     --data-root /data/deepfake
 python -m funkaggle.deepfake.run predict   --data-root /data/deepfake
 ```
+
+`predict` 需要先通过 `train` 生成
+`/data/deepfake/models/weights.hdf5`；缺少该权重文件时命令会失败，不会生成随机预测结果。
 
 CLI 的 `feature` 子命令目前只对待预测视频抽帧（等价于 `feature(config, predict=True)`），
 没有暴露训练集/验证集抽帧的开关。`train` 子命令需要的训练集/验证集图片要先通过

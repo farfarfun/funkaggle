@@ -3,7 +3,7 @@ name = "funkaggle"
 version = "0.0.3"
 description = "Kaggle DFDC（Deepfake Detection Challenge）2019-2020 参赛脚本存档：下载 / 抽帧 / 训练 / 预测"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "牛哥", email = "farfarfun@qq.com" }]
